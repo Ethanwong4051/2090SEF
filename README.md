@@ -1,99 +1,166 @@
-# Library Management System
+# Study Report
 
-A comprehensive library management system built with Python, featuring object-oriented design, efficient data structures, and complete user/book/borrowing management functionality.
+**Course:** COMP2090SEF Data Structures, Algorithms and Problem Solving
 
-## Project Structure
+**Topic:** Hash Table (Data Structure) & Dijkstra’s Algorithm (Algorithm)
+
+**Submission Date:** 2026/3/6
+
+## 1. Introduction
+This report focuses on self-studying Hash Table (a new data structure) and Dijkstra’s Algorithm (a new algorithm) that are not covered in the course curriculum. The hash table is selected for its high-efficiency key-value search and storage characteristics, which can be applied to optimize the book information query in the library management system (reducing query time from O(n) to nearly O(1)). Dijkstra’s Algorithm is a classic shortest path algorithm, which is introduced for its wide application in graph-based resource scheduling and can be extended to the library’s book borrowing path planning and resource allocation optimization. Both the data structure and the algorithm are implemented in Python, combined with practical application scenarios of the library management system for verification and analysis.
+
+## 2. New Data Structure: Hash Table
+### 2.1 Abstract Data Type (ADT) Definition
+The hash table is a non-linear data structure that maps keys to values through a hash function, realizing direct access to data. Its core ADT includes the following basic operations:
+- **hash(key):** Converts the input key into a non-negative integer index.
+- **insert(key, value):** Inserts the key-value pair into the hash table.
+- **search(key):** Queries the corresponding value.
+- **delete(key):** Deletes the key-value pair.
+- **is_empty():** Checks whether the hash table is empty.
+
+### 2.2 Core Implementation: Hash Function & Conflict Resolution
+- **Hash Function:** Uses modulo operation. String keys are converted to integers by summing ASCII values.
+- **Conflict Resolution:** Uses separate chaining with linked lists.
+
+### 2.3 Application Scenario in Library Management System
+- Uses ISBN as key and book info as value.
+- Achieves O(1) average query time.
+- Can extend to user information management.
+
+### 2.4 Python Code Implementation (Core Snippets)
+```python
+class Node:
+    def __init__(self, key, value):
+        self.key = key
+        self.value = value
+        self.next = None
+
+class HashTable:
+    def __init__(self, size=100):
+        self.size = size
+        self.table = [None] * self.size
+
+    def _hash(self, key):
+        if isinstance(key, str):
+            key_int = sum(ord(c) for c in key)
+        else:
+            key_int = int(key)
+        return key_int % self.size
+
+    def insert(self, key, value):
+        index = self._hash(key)
+        if self.table[index] is None:
+            self.table[index] = Node(key, value)
+        else:
+            current = self.table[index]
+            while current.next:
+                if current.key == key:
+                    current.value = value
+                    return
+                current = current.next
+            if current.key == key:
+                current.value = value
+            else:
+                current.next = Node(key, value)
+
+    def search(self, key):
+        index = self._hash(key)
+        current = self.table[index]
+        while current:
+            if current.key == key:
+                return current.value
+            current = current.next
+        return None
+
+    def delete(self, key):
+        index = self._hash(key)
+        current = self.table[index]
+        prev = None
+        while current:
+            if current.key == key:
+                if prev is None:
+                    self.table[index] = current.next
+                else:
+                    prev.next = current.next
+                return True
+            prev = current
+            current = current.next
+        return False
 ```
-library_management_system/
-├── main.py          # Program entry point & menu interaction
-├── models.py        # Core class definitions (User, Book, BST, Queue)
-├── services.py      # Business logic layer (Book/User/Borrow services)
-├── utils.py         # Utility functions (validation, formatting, etc.)
-└── README.md        # Project documentation
+## 3. New Algorithm: Dijkstra’s Algorithm
+### 3.1 Core Concept & Application Scenario
+Dijkstra’s Algorithm finds the shortest path from a starting node to all other nodes in a weighted graph with non-negative edges.
+
+Applications in library system include:
+
+Modeling reading areas as nodes.
+
+Finding minimum-cost borrowing paths.
+
+Optimizing book allocation scheduling.
+
+### 3.2 Time Complexity Analysis
+Basic Implementation: O(V²) using adjacency matrix.
+
+Optimized Implementation: O((V+E)logV) using min-heap.
+
+Space Complexity: O(V).
+
+### 3.3 Execution Steps Example
+Initialize distances.
+
+Select minimum-distance unvisited node.
+
+Relax edges.
+
+Repeat until all nodes visited.
+
+Output shortest paths.
+
+### 3.4 Python Implementation (O(V²))
+```python
+def dijkstra(graph, start):
+    V = len(graph)
+    INF = float('inf')
+    dist = [INF] * V
+    dist[start] = 0
+    visited = [False] * V
+
+    for _ in range(V):
+        min_dist = INF
+        u = -1
+        for i in range(V):
+            if not visited[i] and dist[i] < min_dist:
+                min_dist = dist[i]
+                u = i
+        if u == -1:
+            break
+        visited[u] = True
+        for v in range(V):
+            if not visited[v] and graph[u][v] != 0 and dist[u] + graph[u][v] < dist[v]:
+                dist[v] = dist[u] + graph[u][v]
+    return dist
+Example graph:
+
+python
+library_graph = [
+    [0, 5, 10],
+    [5, 0, 2],
+    [10, 2, 0]
+]
 ```
+## 4. Integration with Library Management System
+Hash Table replaces BST for book storage.
 
-## Core Features
+Dijkstra’s Algorithm added for path planning.
 
-### 1. User Management
-- User registration (supports `normal` and `admin` roles)
-- Secure login with 3 retry attempts for password verification
-- Admin-exclusive permission: Modify user roles (normal ↔ admin)
+Encapsulated into system modules for reuse.
 
-### 2. Book Management (Admin Only)
-- Add new books with 13-digit ISBN uniqueness validation
-- Delete books (with check for borrowed status to prevent invalid deletion)
-- Update book information (title/author/publish date)
-- Multi-dimensional book search (by ISBN/title/author keywords)
-- View all books sorted by ISBN (via BST inorder traversal)
+## 5. References
+Maurer, Lewis. Hash table methods. ACM Computing Surveys, 1975.
 
-### 3. Borrow & Return Functionality
-- Borrow limit: 5 books max for normal users (unlimited for admins)
-- Automatic queueing when book stock is 0 (FIFO mechanism)
-- Auto-process queue: Next user in queue gets the book after return
-- Real-time stock and book status (Available/Unavailable) update
+Larson. Dynamic hash tables. CACM, 1988.
 
-### 4. Data Structures
-- **Binary Search Tree (BST)**: Store books for O(logn) efficient ISBN-based search/sort
-- **Queue**: Manage borrowing queue with FIFO principle for fair resource allocation
+Fan & Shi. Improvement of Dijkstra's algorithm, 2010.
 
-## Running the System
-
-### Prerequisites
-- Python 3.7+ (no external dependencies required)
-
-### Execution Steps
-1. Navigate to the project directory:
-   ```bash
-   cd library_management_system
-   ```
-
-2. Run the main program:
-   ```bash
-   python main.py
-   ```
-
-3. Follow the on-screen menu prompts to interact with the system
-
-## Test Scenarios
-
-### Basic Test Flow
-1. **Admin Login**  
-   - Username: `admin`  
-   - Password: `admin123`
-
-2. **Add a Test Book**  
-   Fill in the following information when prompted:
-   - ISBN: 9787115588888
-   - Title: Python Programming
-   - Author: Ethan
-   - Publish Date: 2024-01-01
-   - Stock: 2
-
-3. **Register a Normal User**  
-   - Username: `user1`  
-   - Password: `123456`  
-   - Role: `normal` (default)
-
-4. **User Operations**
-   - Log in with `user1` credentials
-   - Borrow book (ISBN: 9787115588888) → Stock reduces to 1
-   - Use another user (`user2`) to borrow the same book → Stock reduces to 0, auto-queue
-   - `user1` returns the book → Stock restores to 1, `user2` auto-borrows the book
-
-## Technical Highlights
-- **Full OOP Implementation**: Encapsulation, inheritance, polymorphism, abstract base classes (ABC)
-- **Efficient Data Handling**: BST for sorted book storage, Queue for borrowing management
-- **Robust Validation**: ISBN format check, stock boundary checks, permission verification
-- **Layered Architecture**: Clear separation of Model (data) → Service (logic) → UI (interaction)
-
-## Important Notes
-- ISBN must be a valid 13-digit numeric string
-- Normal users cannot borrow more than 5 books at once
-- Books with outstanding borrows cannot be deleted
-- Login will be temporarily locked after 3 consecutive failed attempts
-- All queue operations follow FIFO (First-In-First-Out) principle
-
----
-
-## License
-This project is for educational purposes only. Feel free to modify and extend for learning use.
+Wang. Improved Dijkstra's shortest path algorithm, 2012.
