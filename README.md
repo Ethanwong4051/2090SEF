@@ -155,12 +155,3 @@ Hash Table replaces BST for book storage.
 Dijkstra’s Algorithm added for path planning.
 
 Encapsulated into system modules for reuse.
-
-## 5. References
-Maurer, Lewis. Hash table methods. ACM Computing Surveys, 1975.
-
-Larson. Dynamic hash tables. CACM, 1988.
-
-Fan & Shi. Improvement of Dijkstra's algorithm, 2010.
-
-Wang. Improved Dijkstra's shortest path algorithm, 2012.
